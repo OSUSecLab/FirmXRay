@@ -6,7 +6,7 @@ import java.util.List;
 public class Constant {
 
     // config
-    public final static String DIRECTORY_NAME = "/home/wen.423/Desktop/Firmware/IoTFirmwareAnalysis";
+    public final static String DIRECTORY_NAME = "/usr/local";
     public final static int MAX_CYCLE_DIVE = 20;
     public final static int MAX_ITERATION = 3;
     public final static int TIMEOUT = 50000;
@@ -61,33 +61,8 @@ public class Constant {
             TI_BONDING, TI_LESC_CONN, TI_DEVICE_ADDR, TI_REGISTER_SERVICE));
 
 
-    // public final static List<String> INITITAL_TAINT_VARS = new ArrayList<>(List.of("r2", "sp"));
-    // public final static List<String> INITITAL_TARGETS = new ArrayList<>(List.of("r2"));
-
-
     // Base address
     public final static String ARM_CORTEX_LE_32 = "ARM:LE:32:Cortex";
-    public final static long APP_BASE_12000 = 0x12000;
-    public final static long APP_BASE_18000 = 0x18000;
-    public final static long APP_BASE_19000 = 0x19000;
-    public final static long APP_BASE_1B000 = 0x1B000;
-    public final static long APP_BASE_1C000 = 0x1C000;
-    public final static long APP_BASE_1D000 = 0x1D000;
-    public final static long APP_BASE_1F000 = 0x1F000;
-    public final static long APP_BASE_20000 = 0x20000;
-    public final static long APP_BASE_21000 = 0x21000;
-    public final static long APP_BASE_23000 = 0x23000;
-    public final static long APP_BASE_24000 = 0x24000;
-    public final static long APP_BASE_25000 = 0x25000;
-    public final static long APP_BASE_26000 = 0x26000;
-    public final static long APP_BASE_27000 = 0x27000;
-    public final static long APP_BASE_29000 = 0x29000;
-    public final static long APP_BASE_2D000 = 0x2D000;
-    public final static long APP_BASE_30000 = 0x30000;
-    public final static long APP_BASE_31000 = 0x31000;
-    public final static long APP_BASE_21400 = 0x21400;
-    public final static long APP_BASE_0D000 = 0x0D000;
-    public final static long APP_BASE_00000 = 0x00000;
 
     // machine code
     public final static byte PUSH = (byte) 0xB5;
@@ -95,13 +70,6 @@ public class Constant {
     public final static byte STMFD2 = (byte) 0xE9;
     public final static byte E7 = (byte) 0xE7;
 
-
-
-
-    public final static List<Long> BASE_ADD_LIST = new ArrayList<>(List.of(APP_BASE_00000, APP_BASE_18000, APP_BASE_0D000,
-            APP_BASE_1B000, APP_BASE_1D000, APP_BASE_12000, APP_BASE_19000, APP_BASE_1C000, APP_BASE_1F000, APP_BASE_20000,
-            APP_BASE_21000, APP_BASE_23000, APP_BASE_24000, APP_BASE_25000, APP_BASE_26000, APP_BASE_27000, APP_BASE_29000,
-            APP_BASE_2D000, APP_BASE_30000, APP_BASE_31000, APP_BASE_21400));
 
 
     public static List<String> getInitialTargetVars(int api) {

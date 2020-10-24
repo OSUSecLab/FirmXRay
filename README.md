@@ -62,11 +62,11 @@ After running FirmXRay on the above example, you can get the following output sa
     "SD_BLE_GATTS_CHARACTERISTIC_ADD": [{
         "Solved": true,
         "Values": {
-            "r2": 536937800,
-            "readperm": 0,
+            "r2": 536937820,
+            "readperm": 34,
             "writePerm": 49,
             "type": 2,
-            "uuid": 0
+            "uuid": 65535
         }
     }],
 
@@ -88,9 +88,9 @@ After running FirmXRay on the above example, you can get the following output sa
     "SD_BLE_GATTS_SERVICE_ADD": [{
         "Solved": true,
         "Values": {
-            "UUID": 0,
+            "UUID": 65520,
             "r0": 0,
-            "r1": 536937764
+            "r1": 536937784
         }
     }],
 

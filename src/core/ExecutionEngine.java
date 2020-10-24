@@ -742,7 +742,7 @@ public class ExecutionEngine {
                         break;
                     }
                     // push value onto stack
-                    registers.put("sp", registers.get("sp")-4);
+                    // registers.put("sp", registers.get("sp")-4);
                     tempsp -= 4;
                     regVal = getValueSingleOp(tempReg, 4);
                     memory.put(tempsp, regVal);
