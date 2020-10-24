@@ -1,0 +1,53 @@
+{
+    "Path": 5,
+    "Size": 4475,
+    "Time": 12729,
+    "Vendor": "Nordic",
+    "Base": "00000000",
+
+    "SD_BLE_GAP_SEC_PARAMS_REPLY": [{
+        "Solved": true,
+        "Values": {
+            "r2": 536872044,
+            "sec_params": 205,
+            "r1": 0
+        }
+    }],
+
+    "SD_BLE_GATTS_CHARACTERISTIC_ADD": [{
+        "Solved": true,
+        "Values": {
+            "r2": 536937800,
+            "readperm": 0,
+            "writePerm": 49,
+            "type": 2,
+            "uuid": 0
+        }
+    }],
+
+    "SD_BLE_UUID_VS_ADD": [{
+        "Solved": true,
+        "Values": {
+            "0": 421490896,
+            "1": 2264053908,
+            "2": 4294265589,
+            "3": 1451491328
+        }
+    }],
+
+    "SD_BLE_GAP_APPEARANCE_SET": [{
+        "Solved": true,
+        "Values": {"r0": 832}
+    }],
+
+    "SD_BLE_GATTS_SERVICE_ADD": [{
+        "Solved": true,
+        "Values": {
+            "UUID": 0,
+            "r0": 0,
+            "r1": 536937764
+        }
+    }],
+
+    "SD_BLE_GAP_LESC_DHKEY_REPLY": [{}]
+}
