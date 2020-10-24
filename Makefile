@@ -2,11 +2,11 @@ JAR_PKG = FirmXRay.jar
 
 MAIN = main.Main
 
-JAVA = /usr/lib/jvm/jdk-11.0.4/bin/java
+JAVA = java
 
-JAVAC = /usr/lib/jvm/jdk-11.0.4/bin/javac
+JAVAC = javac
 
-JAR = /usr/lib/jvm/jdk-11.0.4/bin/jar
+JAR = jar
 	
 JFLAGS = -encoding UTF-8
 
