@@ -13,7 +13,7 @@ public class Constant {
     public final static int DISASSEMBLE_TIMEOUT = 30;
     public final static int MAX_PATH_COUNT = 30;
     public final static int THRESHOLD = 0x1000;
-    public final static int MAX_BASE = 0x80000;
+    public final static int MAX_BASE = Integer.MAX_VALUE;
     public final static int MIN_BASE = -1;
     public final static int STEP = 0x1000;
     public static String MCU;
