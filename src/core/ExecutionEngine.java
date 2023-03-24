@@ -138,6 +138,27 @@ public class ExecutionEngine {
     public void updateSP(long offset) {
         registers.put("sp", basicSP + offset);
     }
+    
+    /**
+     * Simulate pushing a value onto the stack
+     */
+    public void stackPush(long value) {
+    	long stackPointer = registers.get("sp");
+    	memory.put(stackPointer, value);
+    	stackPointer -= 4;
+    	registers.put("sp", stackPointer);
+    }
+    
+    /**
+     * Simulate popping a value off of the stack
+     */
+    public long stackPop() {
+    	long stackPointer = registers.get("sp");
+    	long val = getValFromMemory(stackPointer, 4);
+    	stackPointer += 4;
+    	registers.put("sp", stackPointer);
+    	return val;
+    }
 
 
     public long getValFromMemory(long address, int numByte) {
@@ -537,20 +558,10 @@ public class ExecutionEngine {
                 break;
 
             case "beq":
-                break;
-
             case "b":
-                break;
-
             case "bl":
-                break;
-
             case "bne":
-                break;
-
             case "bgt":
-                break;
-
             case "blx":
                 break;
 
@@ -733,7 +744,6 @@ public class ExecutionEngine {
                 // op = 1
                 Logger.print("Handling PUSH!");
                 for (Object obj: ins.getOpObjects(0)) {
-                    long tempsp = registers.get("sp");
                     Register tempReg;
                     if (obj instanceof Register)
                         tempReg = (Register) obj;
@@ -742,10 +752,8 @@ public class ExecutionEngine {
                         break;
                     }
                     // push value onto stack
-                    // registers.put("sp", registers.get("sp")-4);
-                    tempsp -= 4;
                     regVal = getValueSingleOp(tempReg, 4);
-                    memory.put(tempsp, regVal);
+                    stackPush(regVal);
                 }
                 break;
 
@@ -761,9 +769,7 @@ public class ExecutionEngine {
                         break;
                     }
                     // push value out of stack
-                    registers.put(tempReg.toString(), getValFromMemory(registers.get("sp"), 4));
-                    // increase sp by 4
-                    registers.put("sp", registers.get("sp")+4);
+                    registers.put(tempReg.toString(), stackPop());
                 }
                 break;
 

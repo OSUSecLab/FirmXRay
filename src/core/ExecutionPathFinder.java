@@ -111,8 +111,9 @@ public class ExecutionPathFinder {
             temp.add(listing.getInstructionAt(unit.getAddress()));
         }
         for(int i=temp.size()-1; i>=0; --i) {
-            if (taintDecision(temp.get(i), currentPath)) {
-                currentPath.addInst(temp.get(i));
+        	Instruction inst = temp.get(i);
+            if (taintDecision(inst, currentPath)) {
+                currentPath.addInst(inst);
                 if (currentPath.isTaintFinish()) { // no taint variable left
                     paths.add(currentPath);
                     return;
@@ -333,8 +334,8 @@ public class ExecutionPathFinder {
             case "strh":
             case "strmia":
             case "stm":
-                if (Constant.MCU.equals("Nordic"))
-                    return false;
+                //if (Constant.MCU.equals("Nordic"))
+                //    return false;
 
                 // STR R1, [R2, R3]
                 // taint strategy: if R2 or R3 is in target variable set, then taint R1
@@ -355,11 +356,12 @@ public class ExecutionPathFinder {
                     }
                     return true;
                 }
+                return false;
 
 
 
             case "pop":
-                return false;
+                return true;
 
             case "b":
             case "bl":

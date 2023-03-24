@@ -45,18 +45,14 @@ public class ExecutionPath {
     public Instruction getLastInst() {return path.get(currentInstIndex-1);}
 
     public void addTaintVariable(String v) {
-//        if (!taintVariables.contains(v) && !v.equals("sp")) {
-//            taintVariables.add(v);
-//        }
-
         if (!taintVariables.contains(v)) {
             taintVariables.add(v);
         }
     }
 
     public boolean removeTaintVariable(String v) {
-//        if (v.equals("sp"))
-//            return false;
+        if (v.equals("sp"))
+            return false;
         return taintVariables.remove(v);
     }
 
