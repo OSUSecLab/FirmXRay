@@ -363,7 +363,7 @@ public class ExecutionEngine {
                     // this is a trap of Ghidra
                     // if the inst has sp as operand, it will detect the operand # as 2, even if it has 3 operands (e.g., add r2 sp #0x3)
                     // the reason is Ghidra will take [sp #0x3] as a whole operand
-                    long result = 0;
+                    long result = registers.get(targetReg.getName());
                     for (Object o: ins.getOpObjects(1)) {
                         result += getValueSingleOp(o, 4);
                     }
@@ -392,6 +392,17 @@ public class ExecutionEngine {
                     source = ins.getOpObjects(1);
                     long rightVal = getValueFromOperand(source, ins.getOperandType(0), 4);
                     long result = leftVal - rightVal;
+                    registers.put(targetReg.getName(), result);
+                }
+                else if (opNum == 2 && containSP) {
+                    // this is a trap of Ghidra
+                    // if the inst has sp as operand, it will detect the operand # as 2, even if it has 3 operands (e.g., add r2 sp #0x3)
+                    // the reason is Ghidra will take [sp #0x3] as a whole operand
+                    long result = registers.get(targetReg.getName());
+                    for (Object o: ins.getOpObjects(1)) {
+                        result -= getValueSingleOp(o, 4);
+                    }
+                    // long result = getValueFromOperand(ins.getOpObjects(1), ins.getOperandType(1));;
                     registers.put(targetReg.getName(), result);
                 }
                 else if (opNum == 3) {
