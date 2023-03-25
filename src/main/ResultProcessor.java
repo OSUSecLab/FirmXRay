@@ -325,7 +325,12 @@ public class ResultProcessor {
     public static long readByteFromMemory(Program program, ExecutionEngine engine, long val, int numByte) {
         if (engine.memory.keySet().contains(val)) {  // search in execution engine memory
             engine.solved = true;
-            return engine.memory.get(val);
+            long result = 0;
+            for(int i = numByte - 1; i >= 0; i--) {
+            	result = result << 8;
+            	result += engine.memory.get(val + i);
+            }
+            return result;
         }
         else {
             try {
