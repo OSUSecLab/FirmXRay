@@ -159,6 +159,12 @@ public class ExecutionEngine {
     	registers.put("sp", stackPointer);
     	return val;
     }
+    
+    public void memset(long address, long val, long length) {
+    	for(int i = 0; i < length; i++) {
+    		memory.put(address + i, val);
+    	}
+    }
 
 
     public long getValFromMemory(long address, int numByte) {
@@ -583,11 +589,26 @@ public class ExecutionEngine {
 
             case "beq":
             case "b":
-            case "bl":
             case "bne":
             case "bgt":
             case "blx":
                 break;
+                
+            case "bl":
+            	Address addr = (Address)(ins.getOpObjects(0)[0]);
+            	Function fun = FunctionUtil.findFunctionWithAddress(program, addr);
+            	if(fun != null) {
+            		// simulate a memset if the called function is a memset candidate
+            		// and the first argument is a stack pointer
+            		boolean possibleMemset = FunctionUtil.isMemsetCandidate(fun);
+            		long base = registers.get("r0");
+            		long length = registers.get("r2");
+            		if(possibleMemset && base > basicSP && registers.get("r1") == 0) {
+            			Logger.print("memset(" + base + ", 0, " + length + ")");
+            			memset(base, 0, length);
+            		}
+            	}
+            	break;
 
             case "cmp":
                 // op = 2
