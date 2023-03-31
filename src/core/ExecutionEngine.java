@@ -101,6 +101,7 @@ public class ExecutionEngine {
 
         while(!path.finished()) {
             Instruction nextIns = path.getNextInst();
+            System.out.println(nextIns);
             executeInst(nextIns);
         }
 
@@ -382,7 +383,7 @@ public class ExecutionEngine {
                     // this is a trap of Ghidra
                     // if the inst has sp as operand, it will detect the operand # as 2, even if it has 3 operands (e.g., add r2 sp #0x3)
                     // the reason is Ghidra will take [sp #0x3] as a whole operand
-                    long result = registers.get(targetReg.getName());
+                    long result = 0;
                     for (Object o: ins.getOpObjects(1)) {
                         result += getValueSingleOp(o, 4);
                     }
