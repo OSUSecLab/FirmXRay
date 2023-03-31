@@ -94,8 +94,13 @@ public class ExecutionPathFinder {
 
     public static void dfsSearchPath(Program program, Address startAddress, ExecutionPath currentPath, CodeBlock currentBlock, List<Integer> history) {
 
-        if (history.size() >= Constant.MAX_CYCLE_DIVE)
-            return;
+        if (history.size() >= Constant.MAX_CYCLE_DIVE) {
+        	return;
+        }
+        
+        if(paths.size() >= Constant.MAX_PATH_COUNT) {
+        	return;
+        }
 
         Listing listing = program.getListing();
         CodeUnitIterator codeUnitIterator = listing.getCodeUnits(currentBlock, true);
