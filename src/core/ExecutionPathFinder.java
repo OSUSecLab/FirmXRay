@@ -120,8 +120,10 @@ public class ExecutionPathFinder {
             if (taintDecision(inst, currentPath)) {
                 currentPath.addInst(inst);
                 if (currentPath.isTaintFinish()) { // no taint variable left
-                    paths.add(currentPath);
-                    return;
+                    if(!paths.contains(currentPath)) {
+                    	paths.add(currentPath);
+                    	return;
+                    }
                 }
             }
         }
