@@ -85,15 +85,17 @@ public class BaseAddressUtil {
         return false;
     }
 
-    public static List<Long> getE7Address(Program program) {
+    public static List<Long> getBranchesAddress(Program program) {
         Address current = program.getMinAddress();
         long length = program.getMaxAddress().getUnsignedOffset();
 
         ArrayList<Long> result = new ArrayList<>();
         while (current.getUnsignedOffset() < length) {
             try {
-                if (program.getMemory().getByte(current) == Constant.E7) {
-                    result.add(current.getUnsignedOffset());
+                // Looking for branching instruction (E0 to E7 at an odd address).
+                if (Constant.E0 <= program.getMemory().getByte(current) && program.getMemory().getByte(current) <= Constant.E7) {
+                    if (current.getUnsignedOffset() % 2 != 0)
+                        result.add(current.getUnsignedOffset()-1);
                 }
             } catch (MemoryAccessException e) {
 
@@ -123,10 +125,16 @@ public class BaseAddressUtil {
     public static boolean isFunctionPrologue(Program program, Address current) {
         try {
             if (program.getMemory().getByte(current) == Constant.PUSH)
-                return true;
+                if(current.getUnsignedOffset() % 2 != 0)
+                    return true;
+            // Looking for alternative push instruction B4
+            else if (program.getMemory().getByte(current) == Constant.PUSH2)
+                if(current.getUnsignedOffset() % 2 != 0)
+                    return true;
             else if (program.getMemory().getByte(current) == Constant.STMFD1) {
                 if (program.getMemory().getByte(current.next()) == Constant.STMFD2) {
-                    return true;
+                    if(current.getUnsignedOffset() % 2 != 0)
+                        return true;
                 }
             }
         } catch (MemoryAccessException e) {
