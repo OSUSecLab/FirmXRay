@@ -35,6 +35,13 @@ public class StringUtil {
         while (current.getUnsignedOffset() < size) {
             try {
                 long val = program.getMemory().getInt(current);
+                // Vector table entries must be odd because Thumb mode. Correct to even for candidate address.
+                if(val % 2 != 0)
+                    val = val - 1;
+                else{
+                    current = current.add(4);
+                    continue;
+                }
                 if (val < Constant.MAX_BASE && val > 0)
                     results.put(current, val);
             }

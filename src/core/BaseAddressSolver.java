@@ -121,11 +121,18 @@ public class BaseAddressSolver {
         Set<Address> straddrs = strs.keySet();
         List<Long> relativeAddrSet = FunctionUtil.findAllRelativeInADR(program);
         for (Address add: straddrs) {
-            if (relativeAddrSet.contains(add.getUnsignedOffset())) // get rid of relative string pointer
+            Long strAddr = add.getUnsignedOffset();
+            if (relativeAddrSet.contains(strAddr)) // get rid of relative string pointer
                 continue;
             for (long ab: AbsAddrSet) {
+
+                // If the string pointer is even, the absolute address must be even, or if it is odd, the absolute address must be odd to be considered a good candidate.
+                if((ab % 2 == 0 && strAddr % 2  != 0) || (ab % 2 != 0 && strAddr % 2  == 0)){
+                    continue;
+                }
+
                 // add + candidate = ab
-                long candidate = ab - add.getUnsignedOffset();
+                long candidate = ab - strAddr;
 
                 if (candidate < 0 || candidate > Constant.MAX_BASE)
                     continue;
@@ -139,10 +146,12 @@ public class BaseAddressSolver {
         Map<Address, Long> vec = new HashMap<>();
         if (Constant.MCU.equals("Nordic")) {
             vec = StringUtil.getVector(program);
-            List<Long> e7 = BaseAddressUtil.getE7Address(program);
+            // Get E7 addresses turns into get Branches Addresses
+            List<Long> branches = BaseAddressUtil.getBranchesAddress(program);
+            branches.addAll(entry);
 
             for (long v : vec.values()) {
-                for (long e : e7) {
+                for (long e : branches) {
                     // e + candidate = v
                     long candidate = v - e;
 

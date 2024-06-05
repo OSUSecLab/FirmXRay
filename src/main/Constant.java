@@ -70,6 +70,8 @@ public class Constant {
     public final static byte STMFD2 = (byte) 0xE9;
     public final static byte E7 = (byte) 0xE7;
 
+    public final static byte PUSH2 = (byte) 0xB4;
+    public final static byte E0 = (byte) 0xE0;
 
 
     public static List<String> getInitialTargetVars(int api) {
