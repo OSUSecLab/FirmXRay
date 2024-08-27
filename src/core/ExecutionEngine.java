@@ -101,7 +101,6 @@ public class ExecutionEngine {
 
         while(!path.finished()) {
             Instruction nextIns = path.getNextInst();
-            System.out.println(nextIns);
             executeInst(nextIns);
         }
 
