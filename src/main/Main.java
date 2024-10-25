@@ -188,7 +188,7 @@ public class Main {
             JSONArray jsonArray = new JSONArray();
             for (Address add : addresses) {
                 List<String> targetVarSet = Constant.getInitialTargetVars(api);
-
+                targetVarSet.add("sp");
                 paths = ExecutionPathFinder.findAllExecPaths(program, add, targetVarSet);
 
                 if (paths == null) {

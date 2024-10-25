@@ -138,6 +138,33 @@ public class ExecutionEngine {
     public void updateSP(long offset) {
         registers.put("sp", basicSP + offset);
     }
+    
+    /**
+     * Simulate pushing a value onto the stack
+     */
+    public void stackPush(long value) {
+    	long stackPointer = registers.get("sp");
+    	memory.put(stackPointer, value);
+    	stackPointer -= 4;
+    	registers.put("sp", stackPointer);
+    }
+    
+    /**
+     * Simulate popping a value off of the stack
+     */
+    public long stackPop() {
+    	long stackPointer = registers.get("sp");
+    	long val = getValFromMemory(stackPointer, 4);
+    	stackPointer += 4;
+    	registers.put("sp", stackPointer);
+    	return val;
+    }
+    
+    public void memset(long address, long val, long length) {
+    	for(int i = 0; i < length; i++) {
+    		memory.put(address + i, val);
+    	}
+    }
 
 
     public long getValFromMemory(long address, int numByte) {
@@ -200,9 +227,13 @@ public class ExecutionEngine {
             }
         }
     }
-
-
+    
     public long getValueFromOperand(Object[] op, int type, int numByte) {
+    	return getValueFromOperand(op, type, numByte, false);
+    }
+
+
+    public long getValueFromOperand(Object[] op, int type, int numByte, boolean writeBack) {
         int opNum = op.length;
         if (opNum == 1) {
             return getValueSingleOp(op[0], numByte);
@@ -220,6 +251,10 @@ public class ExecutionEngine {
                 long temp = 0;
                 for (int i=0; i<opNum; ++i) {
                     temp += getValueSingleOp(op[i], numByte);
+                }
+                if(writeBack) {
+                	Register r = (Register)op[0];
+                	registers.put(r.getName(), temp);
                 }
                 return getValFromMemory(temp, numByte);
             }
@@ -244,7 +279,7 @@ public class ExecutionEngine {
         }
     }
 
-    public long getValueFromOperand(Object[] op, int type, boolean dereference, int numByte) {
+    public long getValueFromOperand(Object[] op, int type, boolean dereference, int numByte, boolean writeBack) {
         int opNum = op.length;
         if(opNum == 1) {
             return getValueSingleOp(op[0], 4);
@@ -262,6 +297,10 @@ public class ExecutionEngine {
                 long temp = 0;
                 for (int i=0; i<opNum; ++i) {
                     temp += getValueSingleOp(op[i], numByte);
+                }
+                if(writeBack) {
+                	Register r = (Register)op[0];
+                	registers.put(r.getName(), temp);
                 }
                 if (dereference)
                     return getValFromMemory(temp, numByte);
@@ -306,6 +345,7 @@ public class ExecutionEngine {
         Register targetReg;
         Object[] source;
         long byte1, byte2, byte3, byte4;
+        boolean writeBack;
 
         mnem = InstructionUtil.removePostfix(mnem);
 
@@ -371,6 +411,17 @@ public class ExecutionEngine {
                     source = ins.getOpObjects(1);
                     long rightVal = getValueFromOperand(source, ins.getOperandType(0), 4);
                     long result = leftVal - rightVal;
+                    registers.put(targetReg.getName(), result);
+                }
+                else if (opNum == 2 && containSP) {
+                    // this is a trap of Ghidra
+                    // if the inst has sp as operand, it will detect the operand # as 2, even if it has 3 operands (e.g., add r2 sp #0x3)
+                    // the reason is Ghidra will take [sp #0x3] as a whole operand
+                    long result = registers.get(targetReg.getName());
+                    for (Object o: ins.getOpObjects(1)) {
+                        result -= getValueSingleOp(o, 4);
+                    }
+                    // long result = getValueFromOperand(ins.getOpObjects(1), ins.getOperandType(1));;
                     registers.put(targetReg.getName(), result);
                 }
                 else if (opNum == 3) {
@@ -537,22 +588,27 @@ public class ExecutionEngine {
                 break;
 
             case "beq":
-                break;
-
             case "b":
-                break;
-
-            case "bl":
-                break;
-
             case "bne":
-                break;
-
             case "bgt":
-                break;
-
             case "blx":
                 break;
+                
+            case "bl":
+            	Address addr = (Address)(ins.getOpObjects(0)[0]);
+            	Function fun = FunctionUtil.findFunctionWithAddress(program, addr);
+            	if(fun != null) {
+            		// simulate a memset if the called function is a memset candidate
+            		// and the first argument is a stack pointer
+            		boolean possibleMemset = FunctionUtil.isMemsetCandidate(fun);
+            		long base = registers.get("r0");
+            		long length = registers.get("r2");
+            		if(possibleMemset && base > basicSP && registers.get("r1") == 0) {
+            			Logger.print("memset(" + base + ", 0, " + length + ")");
+            			memset(base, 0, length);
+            		}
+            	}
+            	break;
 
             case "cmp":
                 // op = 2
@@ -589,7 +645,9 @@ public class ExecutionEngine {
 
                 // target memory address
                 source = ins.getOpObjects(1);
-                sourceVal = getValueFromOperand(source, ins.getOperandType(1), false, 4);
+                patchOps(ins, source);
+                writeBack = ins.toString().endsWith("!");
+                sourceVal = getValueFromOperand(source, ins.getOperandType(1), false, 4, writeBack);
 
                 // put 4 bytes according, little endian
                 memory.put(sourceVal, byte1);
@@ -692,7 +750,9 @@ public class ExecutionEngine {
 
                 // target memory address
                 source = ins.getOpObjects(1);
-                sourceVal = getValueFromOperand(source, ins.getOperandType(1), false, 4);
+                patchOps(ins, source);
+                writeBack = ins.toString().endsWith("!");
+                sourceVal = getValueFromOperand(source, ins.getOperandType(1), false, 4, writeBack);
                 regVal &= 0xFF; // only reserve 1 byte, little endian
 
                 memory.put(sourceVal, regVal);
@@ -717,7 +777,9 @@ public class ExecutionEngine {
 
                 // target memory address
                 source = ins.getOpObjects(1);
-                sourceVal = getValueFromOperand(source, ins.getOperandType(1), false, 4);
+                patchOps(ins, source);
+                writeBack = ins.toString().endsWith("!");
+                sourceVal = getValueFromOperand(source, ins.getOperandType(1), false, 4, writeBack);
 
                 // take half word (2 bytes), little endian
                 byte1= regVal & 0xFF;
@@ -733,7 +795,6 @@ public class ExecutionEngine {
                 // op = 1
                 Logger.print("Handling PUSH!");
                 for (Object obj: ins.getOpObjects(0)) {
-                    long tempsp = registers.get("sp");
                     Register tempReg;
                     if (obj instanceof Register)
                         tempReg = (Register) obj;
@@ -742,10 +803,8 @@ public class ExecutionEngine {
                         break;
                     }
                     // push value onto stack
-                    // registers.put("sp", registers.get("sp")-4);
-                    tempsp -= 4;
                     regVal = getValueSingleOp(tempReg, 4);
-                    memory.put(tempsp, regVal);
+                    stackPush(regVal);
                 }
                 break;
 
@@ -761,9 +820,7 @@ public class ExecutionEngine {
                         break;
                     }
                     // push value out of stack
-                    registers.put(tempReg.toString(), getValFromMemory(registers.get("sp"), 4));
-                    // increase sp by 4
-                    registers.put("sp", registers.get("sp")+4);
+                    registers.put(tempReg.toString(), stackPop());
                 }
                 break;
 
@@ -818,6 +875,20 @@ public class ExecutionEngine {
             default:
                 Logger.printW("Unhandled operation: " + mnem);
 
+        }
+    }
+    
+    /**
+     * Hack to handle negative offsets in register addressing
+     * @param ins the instruction
+     * @param source array of operands
+     */
+    private static void patchOps(Instruction ins, Object[] source)
+    {
+    	// hack for negative scalar operand
+        if(ins.toString().contains("#-") && source[1] instanceof Scalar) {
+        	Scalar originalScalar = (Scalar)source[1];
+        	source[1] = new Scalar(originalScalar.bitLength(), -originalScalar.getUnsignedValue(), true);
         }
     }
 }

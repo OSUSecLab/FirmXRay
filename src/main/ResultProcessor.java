@@ -202,23 +202,17 @@ public class ResultProcessor {
 
             case Constant.SD_BLE_GATTS_CHARACTERISTIC_ADD:
                 for(String target: targetVarSet) {
-                    // long val = readIntRegister(program, engine, target);
-                    long attrStructAdd = engine.registers.get(target);
-
-                    long uuidStructAdd = readIntFromMemory(program, engine, attrStructAdd);
-                    long uuid = readByteFromMemory(program, engine, uuidStructAdd, 2);
-                    values.put("uuid", uuid);
-                    long type = readByteFromMemory(program, engine, uuidStructAdd+2, 1);
-                    values.put("type", type);
-
-                    long pAttrStrcutAdd = readIntFromMemory(program, engine,attrStructAdd + 4);
-                    long readPerm = readByteFromMemory(program, engine, pAttrStrcutAdd, 1);
-                    values.put("readperm", readPerm);
-
-                    long writePerm = readByteFromMemory(program, engine, pAttrStrcutAdd + 1, 1);
-                    values.put("writePerm", writePerm);
-
-                    values.put(target, attrStructAdd);
+                	if(target.equals("r2")) {
+                		long pAttrCharValue = engine.registers.get("r2");
+                		long pUUID = readIntFromMemory(program, engine, pAttrCharValue);
+                		long uuid = readByteFromMemory(program, engine, pUUID, 2);
+                		values.put("UUID", Long.toHexString(uuid));
+                	}
+                	if(target.equals("r1")) {
+                		long pCharMd = engine.registers.get("r1");
+                		long charProps = readByteFromMemory(program, engine, pCharMd, 1);
+                		values.put("Char Props", charProps);
+                	}
                 }
                 break;
 
@@ -325,7 +319,12 @@ public class ResultProcessor {
     public static long readByteFromMemory(Program program, ExecutionEngine engine, long val, int numByte) {
         if (engine.memory.keySet().contains(val)) {  // search in execution engine memory
             engine.solved = true;
-            return engine.memory.get(val);
+            long result = 0;
+            for(int i = numByte - 1; i >= 0; i--) {
+            	result = result << 8;
+            	result += engine.memory.get(val + i);
+            }
+            return result;
         }
         else {
             try {

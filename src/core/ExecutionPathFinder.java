@@ -94,8 +94,13 @@ public class ExecutionPathFinder {
 
     public static void dfsSearchPath(Program program, Address startAddress, ExecutionPath currentPath, CodeBlock currentBlock, List<Integer> history) {
 
-        if (history.size() >= Constant.MAX_CYCLE_DIVE)
-            return;
+        if (history.size() >= Constant.MAX_CYCLE_DIVE) {
+        	return;
+        }
+        
+        if(paths.size() >= Constant.MAX_PATH_COUNT) {
+        	return;
+        }
 
         Listing listing = program.getListing();
         CodeUnitIterator codeUnitIterator = listing.getCodeUnits(currentBlock, true);
@@ -111,11 +116,14 @@ public class ExecutionPathFinder {
             temp.add(listing.getInstructionAt(unit.getAddress()));
         }
         for(int i=temp.size()-1; i>=0; --i) {
-            if (taintDecision(temp.get(i), currentPath)) {
-                currentPath.addInst(temp.get(i));
+        	Instruction inst = temp.get(i);
+            if (taintDecision(inst, currentPath)) {
+                currentPath.addInst(inst);
                 if (currentPath.isTaintFinish()) { // no taint variable left
-                    paths.add(currentPath);
-                    return;
+                    if(!paths.contains(currentPath)) {
+                    	paths.add(currentPath);
+                    	return;
+                    }
                 }
             }
         }
@@ -226,7 +234,7 @@ public class ExecutionPathFinder {
                     if (!path.taintVariables.contains(rn.getName()))
                         return false; // do not need to taint
                     else {
-                        if (mnem.equals("mov") || mnem.equals("movw") || InstructionUtil.isLDRInstruction(mnem))
+                        if (mnem.equals("mov") || mnem.equals("movw") || mnem.equals("movs") || InstructionUtil.isLDRInstruction(mnem))
                             path.removeTaintVariable(rn.getName()); // remove from taint variable
                         else if (ins.getNumOperands() == 3 && (mnem.equals("add") || mnem.equals("sub") || mnem.equals("mul")))
                             path.removeTaintVariable(rn.getName()); // remove from taint variable
@@ -333,8 +341,8 @@ public class ExecutionPathFinder {
             case "strh":
             case "strmia":
             case "stm":
-                if (Constant.MCU.equals("Nordic"))
-                    return false;
+                //if (Constant.MCU.equals("Nordic"))
+                //    return false;
 
                 // STR R1, [R2, R3]
                 // taint strategy: if R2 or R3 is in target variable set, then taint R1
@@ -355,15 +363,28 @@ public class ExecutionPathFinder {
                     }
                     return true;
                 }
+                return false;
 
 
 
             case "pop":
-                return false;
+                return true;
 
-            case "b":
             case "bl":
                 // unconditional branch
+            	// only taint instr + args if possible memset
+            	Address addr = (Address)(ins.getOpObjects(0)[0]);
+            	Function fun = FunctionUtil.findFunctionWithAddress(program, addr);
+            	if(fun != null) {
+            		if(FunctionUtil.isMemsetCandidate(fun)) {
+            			path.addTaintVariable("r0"); // address
+            			path.addTaintVariable("r1"); // value
+            			path.addTaintVariable("r2"); // length
+            			Logger.print("tainting call to " + addr);
+            			return true;
+            		}
+            	}
+            case "b":
                 return false;
 
             case "bne":

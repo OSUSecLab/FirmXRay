@@ -6,6 +6,8 @@ import core.ExecutionPathFinder;
 import core.STRInsSolver;
 import ghidra.program.disassemble.Disassembler;
 import ghidra.program.model.address.*;
+import ghidra.program.model.data.DataType;
+import ghidra.program.model.data.ParameterDefinition;
 import ghidra.program.model.lang.OperandType;
 import ghidra.program.model.lang.Register;
 import ghidra.program.model.listing.*;
@@ -233,6 +235,19 @@ public class FunctionUtil {
         }
         return fun;
 
+    }
+    
+    public static boolean isMemsetCandidate(Function fun) {
+    	FunctionSignature sig = fun.getSignature();
+    	ParameterDefinition[] params = sig.getArguments();
+    	DataType returnType = sig.getReturnType();
+    	if(params.length == 3) {
+    		if(params[0].getDataType().getName().contains("*")
+    				&& params[2].getDataType().getName().equals("int"))
+    			return true;
+    	}
+    	
+    	return false;
     }
 
 }
